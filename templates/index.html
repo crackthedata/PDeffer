@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDeffer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header>
+    <h1>PDeffer</h1>
+    <p class="muted">PDFs are read and written under: <code>{{ data_dir }}</code></p>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="flash">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <section class="card">
+    <h2>Files on disk</h2>
+    {% if files %}
+      <ul class="file-list">
+        {% for f in files %}
+          <li>
+            <span>{{ f }}</span>
+            <a href="{{ url_for('download', name=f) }}">Download</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No PDFs yet. Upload below or mount a host folder on <code>/data</code>.</p>
+    {% endif %}
+
+    <form class="upload" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+      <label>Upload PDF <input type="file" name="file" accept=".pdf,application/pdf"></label>
+      <button type="submit">Upload</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Extract pages</h2>
+    <p class="muted">Page list examples: <code>1,3,5</code> or <code>1-4,7,9-10</code> (1-based).</p>
+    <form action="{{ url_for('extract') }}" method="post">
+      <label>Source PDF
+        <select name="source" required>
+          <option value="">— choose —</option>
+          {% for f in files %}
+            <option value="{{ f }}">{{ f }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Pages <input type="text" name="pages" placeholder="e.g. 1,3-5,8" required></label>
+      <label>Save as (filename) <input type="text" name="output" placeholder="extracted.pdf" required></label>
+      <button type="submit">Extract</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Merge PDFs</h2>
+    <p class="muted">One filename per line, in merge order (must exist in the folder above).</p>
+    <form action="{{ url_for('merge') }}" method="post">
+      <label>Files (order)
+        <textarea name="merge_files" rows="6" placeholder="a.pdf&#10;b.pdf"></textarea>
+      </label>
+      <label>Save as <input type="text" name="merge_output" placeholder="merged.pdf" required></label>
+      <button type="submit">Merge</button>
+    </form>
+  </section>
+</body>
+</html>

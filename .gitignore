@@ -1,3 +1,6 @@
+# Local PDF working directory (web UI / compose bind mount)
+pdfs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
