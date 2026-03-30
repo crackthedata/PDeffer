@@ -1,0 +1,12 @@
+# PDFs on your machine: use a bind mount so ./pdfs on the host is /data in the container.
+# Create the folder first: mkdir pdfs  (then copy or save PDFs there)
+
+services:
+  pdeffer:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./pdfs:/data
+    environment:
+      PDEFFER_SECRET_KEY: ${PDEFFER_SECRET_KEY:-change-me-in-production}
