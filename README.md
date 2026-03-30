@@ -50,6 +50,34 @@ For production, set a long random `PDEFFER_SECRET_KEY` in the environment (see `
 
 **Note:** Tkinter does not run in a typical headless container, so the Docker image serves the **web** app with Gunicorn, not `pdf_gui.py`.
 
+### Removing Docker containers
+
+`docker rm` needs **which** container to remove (name or ID). List them first:
+
+```bash
+docker ps -a
+```
+
+Then remove one container:
+
+```bash
+docker rm NAMES_OR_ID
+```
+
+If you started the app with Compose, from this project folder you can stop and remove those containers in one step:
+
+```bash
+docker compose down
+```
+
+That does **not** delete your host PDF folder (`./pdfs` when using the default bind mount); only the containers go away.
+
+To remove **all** stopped containers on the machine (after Docker’s confirmation):
+
+```bash
+docker container prune
+```
+
 ## Desktop GUI
 
 ```bash
