@@ -47,3 +47,18 @@ def list_pdfs(root: Path) -> list[str]:
         if p.is_file() and p.suffix.lower() == ".pdf":
             names.append(p.name)
     return names
+
+
+def list_docs(root: Path) -> list[str]:
+    """Basenames of Word documents (``*.docx`` / ``*.doc``) directly under ``root``."""
+    root = root.resolve()
+    if not root.is_dir():
+        return []
+    names: list[str] = []
+    for p in sorted(root.iterdir()):
+        if not p.is_file():
+            continue
+        suf = p.suffix.lower()
+        if suf in {".docx", ".doc"}:
+            names.append(p.name)
+    return names

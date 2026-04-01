@@ -37,6 +37,13 @@ docker compose up --build
 
 Open `http://localhost:8080`. Files in `./pdfs` on the host are visible inside the container as `/data`; new PDFs are written back to the same host folder.
 
+From the web UI you can:
+
+- **Upload**: `.pdf`, `.docx`, `.doc` into the data directory (they never leave your machine).
+- **Extract pages**: pick a PDF, enter a 1‑based page list (`1,3-5,8`), and save as a new PDF.
+- **Merge PDFs**: build an ordered list using the buttons; the top item appears first in the merged output.
+- **Convert Word to PDF**: select a Word document and convert it to PDF (LibreOffice runs inside the container).
+
 To point at another host directory, change the volume in `docker-compose.yml`, for example:
 
 ```yaml
@@ -101,4 +108,6 @@ merge_pdfs(["a.pdf", "b.pdf"], "combined.pdf")
 ## Requirements
 
 - Python 3.10+
-- [pypdf](https://pypdf.readthedocs.io/), Flask, Gunicorn (see `requirements.txt`)
+- [pypdf](https://pypdf.readthedocs.io/)
+- Flask + Gunicorn for the web UI
+- LibreOffice (Writer) for Word → PDF conversion (installed in the Docker image; for local runs, install LibreOffice so `soffice` is on `PATH`)
