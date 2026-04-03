@@ -17,7 +17,6 @@ code { font-size: 0.88em; background: #f0f0f0; padding: 0.1em 0.35em; border-rad
 .flash li.ok { background: #e6f4ea; color: #137333; }
 .flash li.error { background: #fce8e6; color: #c5221f; }
 
-/* Two-column layout: files stay visible while working on extract/merge */
 .layout {
   display: grid;
   gap: 1.25rem;
@@ -114,7 +113,6 @@ form button[type="submit"]:hover { background: #444; }
 }
 .file-list a { font-size: 0.9rem; white-space: nowrap; flex-shrink: 0; }
 
-/* Merge builder */
 .merge-order-label,
 .merge-picker-label {
   font-size: 0.85rem;
