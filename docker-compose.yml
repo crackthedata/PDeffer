@@ -1,5 +1,4 @@
 # PDFs on your machine: use a bind mount so ./pdfs on the host is /data in the container.
-# Create the folder first: mkdir pdfs  (then copy or save PDFs there)
 
 services:
   pdeffer:

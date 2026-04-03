@@ -15,8 +15,8 @@ def extract_pages(
     """
     Write a new PDF containing only the given pages from ``input_path``.
 
-    ``page_numbers`` uses 1-based indexing (first page is 1), in the order
-    you list them; duplicates are allowed and repeat that page in the output.
+    ``page_numbers`` uses 1-based indexing (first page is 1), 
+    duplicates are allowed and repeat that page in the output.
     """
     src = Path(input_path)
     dst = Path(output_path)

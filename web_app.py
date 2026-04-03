@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
 from pathlib import Path
 
 from flask import Flask, flash, redirect, render_template, request, send_file, url_for
 
 from page_spec import parse_page_list
-from paths_safe import data_root, list_pdfs, resolve_under_root
+from paths_safe import data_root, list_docs, list_pdfs, resolve_under_root
 from pdf_extract import extract_pages
 from pdf_merge import merge_pdfs
 
@@ -32,7 +33,8 @@ def index():
     root = data_root()
     root.mkdir(parents=True, exist_ok=True)
     files = list_pdfs(root)
-    return render_template("index.html", files=files, data_dir=str(root))
+    docs = list_docs(root)
+    return render_template("index.html", files=files, docs=docs, data_dir=str(root))
 
 
 @app.post("/extract")
@@ -105,16 +107,89 @@ def upload():
         flash("No file selected.", "error")
         return redirect(url_for("index"))
     raw = Path(f.filename).name
-    if not raw.lower().endswith(".pdf"):
-        flash("Only .pdf uploads are allowed.", "error")
+    lower = raw.lower()
+    if not (lower.endswith(".pdf") or lower.endswith(".docx") or lower.endswith(".doc")):
+        flash("Only .pdf, .docx, or .doc uploads are allowed.", "error")
         return redirect(url_for("index"))
-    if not re.match(r"^[\w.\- ()\[\]]+\.pdf$", raw, re.I):
+    if not re.match(r"^[\w.\- ()\[\]]+\.(pdf|docx?|DOCX?)$", raw, re.I):
         flash("Filename has unsupported characters.", "error")
         return redirect(url_for("index"))
     try:
         dest = resolve_under_root(root, raw)
         f.save(str(dest))
         flash(f"Uploaded {raw}", "ok")
+    except Exception as e:
+        flash(str(e), "error")
+    return redirect(url_for("index"))
+
+
+def _convert_word_to_pdf(src: Path, dst: Path) -> None:
+    """
+    Convert a Word document to PDF using LibreOffice (``soffice``).
+
+    ``src`` and ``dst`` must both be under ``data_root()``; call soffice in
+    headless mode, writing into the destination directory, then rename the
+    generated PDF to the exact desired filename.
+    """
+    out_dir = dst.parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        result = subprocess.run(
+            [
+                "soffice",
+                "--headless",
+                "--nologo",
+                "--convert-to",
+                "pdf",
+                "--outdir",
+                str(out_dir),
+                str(src),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError(
+            "LibreOffice (soffice) is not available. Install it on the host, "
+            "or use the Docker image which includes it."
+        ) from exc
+
+    if result.returncode != 0:
+        raise RuntimeError(f"Conversion failed: {result.stderr.strip() or result.stdout.strip()}")
+
+    generated = out_dir / (src.stem + ".pdf")
+    if not generated.is_file():
+        raise RuntimeError("Conversion did not produce a PDF file.")
+
+    if generated.resolve() != dst.resolve():
+        if dst.exists():
+            dst.unlink()
+        generated.rename(dst)
+
+
+@app.post("/convert-word")
+def convert_word():
+    root = data_root()
+    try:
+        src_name = request.form.get("source_doc", "").strip()
+        out_name = request.form.get("output_pdf", "").strip()
+        if not src_name:
+            flash("Choose a Word document to convert.", "error")
+            return redirect(url_for("index"))
+
+        src = resolve_under_root(root, src_name)
+        if not src.is_file():
+            flash("Source document not found.", "error")
+            return redirect(url_for("index"))
+
+        if not out_name:
+            out_name = src.stem + ".pdf"
+        out = resolve_under_root(root, _safe_output_name(out_name))
+
+        _convert_word_to_pdf(src, out)
+        flash(f"Converted to {out.name}", "ok")
     except Exception as e:
         flash(str(e), "error")
     return redirect(url_for("index"))
