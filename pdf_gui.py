@@ -1,4 +1,4 @@
-"""Simple Tkinter UI: extract pages from a PDF or merge PDFs in list order."""
+"""extract pages from a PDF or merge PDFs in list order."""
 
 from __future__ import annotations
 
