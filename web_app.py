@@ -127,14 +127,13 @@ def _convert_word_to_pdf(src: Path, dst: Path) -> None:
     """
     Convert a Word document to PDF using LibreOffice (``soffice``).
 
-    ``src`` and ``dst`` must both be under ``data_root()``; we call soffice in
+    ``src`` and ``dst`` must both be under ``data_root()``; call soffice in
     headless mode, writing into the destination directory, then rename the
     generated PDF to the exact desired filename.
     """
     out_dir = dst.parent
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # soffice --headless --convert-to pdf --outdir <out_dir> <src>
     try:
         result = subprocess.run(
             [
@@ -160,7 +159,6 @@ def _convert_word_to_pdf(src: Path, dst: Path) -> None:
     if result.returncode != 0:
         raise RuntimeError(f"Conversion failed: {result.stderr.strip() or result.stdout.strip()}")
 
-    # LibreOffice writes <basename>.pdf in out_dir, regardless of the requested dst name.
     generated = out_dir / (src.stem + ".pdf")
     if not generated.is_file():
         raise RuntimeError("Conversion did not produce a PDF file.")
@@ -186,7 +184,6 @@ def convert_word():
             flash("Source document not found.", "error")
             return redirect(url_for("index"))
 
-        # Default output name: same basename with .pdf
         if not out_name:
             out_name = src.stem + ".pdf"
         out = resolve_under_root(root, _safe_output_name(out_name))
