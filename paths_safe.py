@@ -11,15 +11,12 @@ def data_root() -> Path:
     env = os.environ.get("PDEFFER_DATA")
     if env:
         return Path(env).resolve()
-    # Local dev: use ./pdfs under the current working directory (Dockerfile sets PDEFFER_DATA=/data)
     return (Path.cwd() / "pdfs").resolve()
 
 
 def resolve_under_root(root: Path, relative: str) -> Path:
     """
     Return ``root / relative`` if the result stays under ``root``.
-
-    ``relative`` must be a relative path without ``..`` (single file or subfolder).
     """
     rel = Path(relative)
     if rel.is_absolute():
